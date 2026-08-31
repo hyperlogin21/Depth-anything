@@ -1,0 +1,14 @@
+# torch / torchvision are intentionally NOT pinned here: AutoDL's PyTorch
+# base images (and the Dockerfile in this repo) already ship a CUDA-matched
+# build, and reinstalling from PyPI would silently overwrite it with a
+# CPU-only wheel. setup.sh installs torch itself only if it's missing.
+fastapi>=0.111,<1.0
+uvicorn[standard]>=0.29,<1.0
+python-multipart>=0.0.9
+transformers>=4.45
+accelerate>=0.30
+huggingface_hub>=0.24
+opencv-python-headless>=4.9
+imageio[ffmpeg]>=2.34
+numpy>=1.24
+pillow>=10.0
