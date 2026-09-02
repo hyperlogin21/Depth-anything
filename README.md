@@ -25,6 +25,7 @@ api/jobs.py             In-process job queue (single GPU worker)
 api/settings.py         Env-var driven configuration
 setup.sh                 Installs dependencies
 autodl_start.sh          AutoDL-specific setup + background launch
+baidu_sync.sh             Push/pull files to/from Baidu Pan via rclone
 Dockerfile                Container build
 ```
 
@@ -88,6 +89,30 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
    ```bash
    ssh -L 8000:localhost:8000 <your-autodl-ssh-target>
    ```
+
+## Transferring files via Baidu Pan (rclone)
+
+Baidu Pan (百度网盘) has no rsync or SSH access, so plain `rsync` can't talk
+to it. `baidu_sync.sh` wraps [`rclone`](https://rclone.org)'s `baidunetdisk`
+backend instead, which gives the same delta-sync behaviour rsync would
+(only changed files transfer, checksums, `--dry-run` support) over Baidu's
+API. Handy for moving source videos onto a rented GPU box and finished
+depth videos back off it.
+
+```bash
+./baidu_sync.sh install     # install rclone if missing
+./baidu_sync.sh configure   # one-time: link the 'baidupan' rclone remote
+
+./baidu_sync.sh pull inputs storage/uploads   # fetch source videos to process
+./baidu_sync.sh push storage/outputs results  # upload finished depth videos
+./baidu_sync.sh ls                            # list what's on Baidu Pan
+```
+
+Baidu's login is OAuth and needs a browser, which a headless rented box
+usually doesn't have — `configure` walks through `rclone config`'s
+"authorize on another machine, paste the token back" flow for that case.
+`BAIDU_REMOTE` / `BAIDU_REMOTE_DIR` env vars override the remote name
+(default `baidupan`) and the base remote path (default `depth-anything`).
 
 ## API usage
 
